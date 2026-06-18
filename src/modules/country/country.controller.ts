@@ -24,18 +24,30 @@ const createCountry = catchAsync(
 
 const getAllCountries = catchAsync(
   async (req: Request, res: Response) => {
-    const result = await CountryService.getAllCountries({
+    const filters = {
       isActive:
         req.query.isActive === undefined
           ? undefined
           : req.query.isActive === "true",
-    });
+    };
+
+    const paginationOptions = {
+      page: req.query.page as string,
+      limit: req.query.limit as string,
+    };
+
+    const result =
+      await CountryService.getAllCountries(
+        filters,
+        paginationOptions,
+      );
 
     sendResponse(res, {
       statusCode: status.OK,
       success: true,
       message: COUNTRY_MESSAGES.RETRIEVED,
-      data: result,
+      meta: result.meta,
+      data: result.result,
     });
   },
 );

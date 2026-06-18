@@ -2,9 +2,10 @@ import status from "http-status";
 
 import { Country } from "./country.model";
 
+import { TPaginationOptions } from "../../types/pagination";
 import { AppError } from "../../utils/AppError";
+import { calculatePagination } from "../../utils/calculatePagination";
 import { validateObjectId } from "../../utils/validateObjectId";
-
 import { COUNTRY_MESSAGES } from "./country.constant";
 
 const createCountry = async (payload: {
@@ -35,7 +36,12 @@ const createCountry = async (payload: {
   });
 };
 
-const getAllCountries = async (filters: { isActive?: boolean }) => {
+const getAllCountries = async (
+  filters: {
+    isActive?: boolean;
+  },
+  paginationOptions: TPaginationOptions,
+) => {
   const query: {
     isActive?: boolean;
   } = {};
@@ -44,9 +50,25 @@ const getAllCountries = async (filters: { isActive?: boolean }) => {
     query.isActive = filters.isActive;
   }
 
-  return await Country.find(query).sort({
-    createdAt: -1,
-  });
+  const { page, limit, skip } =
+    calculatePagination(paginationOptions);
+
+  const total = await Country.countDocuments(query);
+
+  const countries = await Country.find(query)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+    result: countries,
+  };
 };
 
 const getSingleCountry = async (id: string) => {

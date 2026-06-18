@@ -7,6 +7,7 @@ import { AppError } from "../../utils/AppError";
 import { calculatePagination } from "../../utils/calculatePagination";
 import { validateObjectId } from "../../utils/validateObjectId";
 import { COUNTRY_MESSAGES } from "./country.constant";
+import { TCountryFilters } from "./country.type";
 
 const createCountry = async (payload: {
   name: string;
@@ -37,14 +38,10 @@ const createCountry = async (payload: {
 };
 
 const getAllCountries = async (
-  filters: {
-    isActive?: boolean;
-  },
+  filters: TCountryFilters,
   paginationOptions: TPaginationOptions,
 ) => {
-  const query: {
-    isActive?: boolean;
-  } = {};
+  const query: TCountryFilters = {};
 
   if (filters.isActive !== undefined) {
     query.isActive = filters.isActive;

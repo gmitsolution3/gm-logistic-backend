@@ -1,12 +1,5 @@
 import { Response } from "express";
-
-type TResponse<T> = {
-  statusCode: number;
-  success: boolean;
-  message?: string;
-  meta?: Record<string, unknown>;
-  data?: T;
-};
+import { TResponse } from "../types/common";
 
 export const sendResponse = <T>(
   res: Response,

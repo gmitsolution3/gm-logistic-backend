@@ -1,10 +1,17 @@
-import { TPaginationOptions } from "../types/pagination";
+import { TPaginationOptions } from "../types/common";
 
 export const calculatePagination = (
   options: TPaginationOptions,
 ) => {
-  const page = Number(options.page) || 1;
-  const limit = Number(options.limit) || 10;
+  const page = Math.max(
+    1,
+    Number(options.page) || 1,
+  );
+
+  const limit = Math.max(
+    1,
+    Number(options.limit) || 10,
+  );
 
   const skip = (page - 1) * limit;
 

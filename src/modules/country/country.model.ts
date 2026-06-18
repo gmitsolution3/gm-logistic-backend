@@ -30,8 +30,10 @@ const countrySchema = new mongoose.Schema(
     },
   },
   {
+    strict: true,
     timestamps: true,
-  }
+    versionKey: false,
+  },
 );
 
 /**
@@ -42,9 +44,9 @@ const countrySchema = new mongoose.Schema(
 countrySchema.index({ name: 1 }, { unique: true });
 countrySchema.index({ code: 1 }, { unique: true });
 
-export type CountryType = InferSchemaType<typeof countrySchema>;
+export type TCountry = InferSchemaType<typeof countrySchema>;
 
-export interface ICountry extends CountryType {
+export interface ICountry extends TCountry {
   _id: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;

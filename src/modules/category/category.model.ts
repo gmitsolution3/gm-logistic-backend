@@ -22,8 +22,10 @@ const categorySchema = new mongoose.Schema(
     },
   },
   {
+    strict: true,
     timestamps: true,
-  }
+    versionKey: false,
+  },
 );
 
 /**

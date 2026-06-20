@@ -1,5 +1,4 @@
 import mongoose, {
-  CallbackError,
   HydratedDocument,
   InferSchemaType,
 } from "mongoose";
@@ -38,7 +37,9 @@ const pricingSchema = new mongoose.Schema(
     },
   },
   {
+    strict: true,
     timestamps: true,
+    versionKey: false,
   },
 );
 
@@ -55,20 +56,13 @@ pricingSchema.index(
 export type TPricing = InferSchemaType<typeof pricingSchema>;
 
 pricingSchema.pre(
-  "validate" as any,
-  function (
-    this: HydratedDocument<TPricing>,
-    next: (err?: CallbackError) => void,
-  ) {
+  "validate",
+  async function (this: HydratedDocument<TPricing>) {
     if (this.maxPrice < this.minPrice) {
-      return next(
-        new Error(
-          "Maximum price must be greater than or equal to minimum price",
-        ),
+      throw new Error(
+        "Maximum price must be greater than or equal to minimum price",
       );
     }
-
-    next();
   },
 );
 

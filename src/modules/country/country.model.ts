@@ -1,5 +1,10 @@
 import mongoose, { InferSchemaType, Model } from "mongoose";
 
+/**
+ * Indexes
+ * - Fast lookup by country name
+ * - Fast lookup by country code
+ */
 const countrySchema = new mongoose.Schema(
   {
     name: {
@@ -36,13 +41,6 @@ const countrySchema = new mongoose.Schema(
   },
 );
 
-/**
- * Indexes
- * - Fast lookup by country name
- * - Fast lookup by country code
- */
-countrySchema.index({ name: 1 }, { unique: true });
-countrySchema.index({ code: 1 }, { unique: true });
 
 export type TCountry = InferSchemaType<typeof countrySchema>;
 

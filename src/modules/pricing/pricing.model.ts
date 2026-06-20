@@ -2,7 +2,6 @@ import mongoose, {
   CallbackError,
   HydratedDocument,
   InferSchemaType,
-  Model,
 } from "mongoose";
 
 const pricingSchema = new mongoose.Schema(
@@ -10,25 +9,27 @@ const pricingSchema = new mongoose.Schema(
     categoryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
-      required: [true, "Category is required"],
+      required: true,
     },
 
     countryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Country",
-      required: [true, "Country is required"],
+      required: true,
     },
 
     minPrice: {
       type: Number,
-      required: [true, "Minimum price is required"],
-      min: [0, "Minimum price cannot be negative"],
+      required: true,
+      min: 0,
+      default: 0,
     },
 
     maxPrice: {
       type: Number,
-      required: [true, "Maximum price is required"],
-      min: [0, "Maximum price cannot be negative"],
+      required: true,
+      min: 0,
+      default: 0,
     },
 
     isConfigured: {
@@ -41,10 +42,6 @@ const pricingSchema = new mongoose.Schema(
   },
 );
 
-/**
- * Prevent duplicate pricing configuration
- * for same category + country pair
- */
 pricingSchema.index(
   {
     categoryId: 1,
@@ -55,20 +52,18 @@ pricingSchema.index(
   },
 );
 
-/**
- * Validation:
- * maxPrice >= minPrice
- */
+export type TPricing = InferSchemaType<typeof pricingSchema>;
+
 pricingSchema.pre(
   "validate" as any,
   function (
-    this: HydratedDocument<IPricing>,
+    this: HydratedDocument<TPricing>,
     next: (err?: CallbackError) => void,
   ) {
     if (this.maxPrice < this.minPrice) {
       return next(
         new Error(
-          "maxPrice must be greater than or equal to minPrice",
+          "Maximum price must be greater than or equal to minimum price",
         ),
       );
     }
@@ -77,16 +72,5 @@ pricingSchema.pre(
   },
 );
 
-export type PricingType = InferSchemaType<typeof pricingSchema>;
-
-export interface IPricing extends PricingType {
-  _id: mongoose.Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export const Pricing: Model<IPricing> =
-  mongoose.models.Pricing ||
-  mongoose.model<IPricing>("Pricing", pricingSchema);
-
-export default Pricing;
+export const Pricing =
+  mongoose.models.Pricing || mongoose.model("Pricing", pricingSchema);

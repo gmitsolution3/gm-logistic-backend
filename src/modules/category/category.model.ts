@@ -1,5 +1,13 @@
 import mongoose, { InferSchemaType, Model } from "mongoose";
 
+/**
+ * Unique slug value
+ * Example:
+ * electronics
+ * cosmetics
+ * fashion
+ */
+
 const categorySchema = new mongoose.Schema(
   {
     value: {
@@ -27,15 +35,6 @@ const categorySchema = new mongoose.Schema(
     versionKey: false,
   },
 );
-
-/**
- * Unique slug value
- * Example:
- * electronics
- * cosmetics
- * fashion
- */
-categorySchema.index({ value: 1 }, { unique: true });
 
 export type CategoryType = InferSchemaType<typeof categorySchema>;
 

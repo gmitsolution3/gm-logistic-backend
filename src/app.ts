@@ -5,7 +5,7 @@ import router from "./routes";
 
 const app = express();
 
-const allowedOrigins = ["http://localhost:3000", "live-url-will-go-here"];
+const allowedOrigins = ["http://localhost:3000", "https://www.gmlogistic.net"];
 
 // global middleware configuration
 app.use(

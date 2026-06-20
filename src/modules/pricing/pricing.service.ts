@@ -21,11 +21,7 @@ const getAllPricing = async (
   filters: TPricingFilters,
   paginationOptions: TPaginationOptions,
 ) => {
-  const query: {
-    countryId?: string;
-    categoryId?: string;
-    isConfigured?: boolean;
-  } = {};
+  const query: Record<string, unknown> = {};
 
   if (filters.countryId) {
     query.countryId = filters.countryId;
@@ -37,6 +33,39 @@ const getAllPricing = async (
 
   if (filters.isConfigured !== undefined) {
     query.isConfigured = filters.isConfigured;
+  }
+
+  if (filters.searchTerm) {
+    const countries = await Country.find({
+      name: {
+        $regex: filters.searchTerm,
+        $options: "i",
+      },
+    }).select("_id");
+
+    const categories = await Category.find({
+      label: {
+        $regex: filters.searchTerm,
+        $options: "i",
+      },
+    }).select("_id");
+
+    const countryIds = countries.map((country) => country._id);
+
+    const categoryIds = categories.map((category) => category._id);
+
+    query.$or = [
+      {
+        countryId: {
+          $in: countryIds,
+        },
+      },
+      {
+        categoryId: {
+          $in: categoryIds,
+        },
+      },
+    ];
   }
 
   const { page, limit, skip } =

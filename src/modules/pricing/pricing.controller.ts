@@ -18,6 +18,8 @@ const getAllPricing = catchAsync(
         req.query.isConfigured === undefined
           ? undefined
           : req.query.isConfigured === "true",
+
+      searchTerm: req.query.searchTerm as string,
     };
 
     const paginationOptions = {

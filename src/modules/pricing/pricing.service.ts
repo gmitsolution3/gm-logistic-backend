@@ -36,16 +36,18 @@ const getAllPricing = async (
   }
 
   if (filters.searchTerm) {
+    const searchTerm = filters.searchTerm?.trim();
+
     const countries = await Country.find({
       name: {
-        $regex: filters.searchTerm,
+        $regex: searchTerm,
         $options: "i",
       },
     }).select("_id");
 
     const categories = await Category.find({
       label: {
-        $regex: filters.searchTerm,
+        $regex: searchTerm,
         $options: "i",
       },
     }).select("_id");

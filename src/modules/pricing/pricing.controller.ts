@@ -25,11 +25,10 @@ const getAllPricing = catchAsync(
       limit: req.query.limit as string,
     };
 
-    const result =
-      await PricingService.getAllPricing(
-        filters,
-        paginationOptions,
-      );
+    const result = await PricingService.getAllPricing(
+      filters,
+      paginationOptions,
+    );
 
     sendResponse(res, {
       statusCode: status.OK,
@@ -43,16 +42,14 @@ const getAllPricing = catchAsync(
 
 const getSinglePricing = catchAsync(
   async (req: Request, res: Response) => {
-    const result =
-      await PricingService.getSinglePricing(
-        req.params.id as string,
-      );
+    const result = await PricingService.getSinglePricing(
+      req.params.id as string,
+    );
 
     sendResponse(res, {
       statusCode: status.OK,
       success: true,
-      message:
-        PRICING_MESSAGES.SINGLE_RETRIEVED,
+      message: PRICING_MESSAGES.SINGLE_RETRIEVED,
       data: result,
     });
   },
@@ -60,11 +57,10 @@ const getSinglePricing = catchAsync(
 
 const updatePricing = catchAsync(
   async (req: Request, res: Response) => {
-    const result =
-      await PricingService.updatePricing(
-        req.params.id as string,
-        req.body,
-      );
+    const result = await PricingService.updatePricing(
+      req.params.id as string,
+      req.body,
+    );
 
     sendResponse(res, {
       statusCode: status.OK,
@@ -75,8 +71,23 @@ const updatePricing = catchAsync(
   },
 );
 
+const syncPricing = catchAsync(
+  async (_req: Request, res: Response) => {
+    const result =
+      await PricingService.generateMissingPricingRecords();
+
+    sendResponse(res, {
+      statusCode: status.OK,
+      success: true,
+      message: PRICING_MESSAGES.SYNCED,
+      data: result,
+    });
+  },
+);
+
 export const PricingController = {
   getAllPricing,
   getSinglePricing,
   updatePricing,
+  syncPricing,
 };

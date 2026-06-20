@@ -10,19 +10,17 @@ import {
 import { TPaginationOptions } from "../../types/common";
 
 import { AppError } from "../../utils/AppError";
+import { calculatePagination } from "../../utils/calculatePagination";
 import { generateSlug } from "../../utils/generateSlug";
 import { validateObjectId } from "../../utils/validateObjectId";
-import { calculatePagination } from "../../utils/calculatePagination";
 
+import { PricingService } from "../pricing/pricing.service";
 import { CATEGORY_MESSAGES } from "./category.constant";
 
-const createCategory = async (
-  payload: TCreateCategoryPayload,
-) => {
+const createCategory = async (payload: TCreateCategoryPayload) => {
   const value = generateSlug(payload.label);
 
-  const existingCategory =
-    await Category.findOne({ value });
+  const existingCategory = await Category.findOne({ value });
 
   if (existingCategory) {
     throw new AppError(
@@ -31,10 +29,16 @@ const createCategory = async (
     );
   }
 
-  return await Category.create({
+  const category = await Category.create({
     label: payload.label.trim(),
     value,
   });
+
+  await PricingService.createPricingForCategory(
+    category._id.toString(),
+  );
+
+  return category;
 };
 
 const getAllCategories = async (
@@ -50,8 +54,7 @@ const getAllCategories = async (
   const { page, limit, skip } =
     calculatePagination(paginationOptions);
 
-  const total =
-    await Category.countDocuments(query);
+  const total = await Category.countDocuments(query);
 
   const categories = await Category.find(query)
     .sort({ createdAt: -1 })
@@ -72,14 +75,10 @@ const getAllCategories = async (
 const getSingleCategory = async (id: string) => {
   validateObjectId(id, "Category");
 
-  const category =
-    await Category.findById(id);
+  const category = await Category.findById(id);
 
   if (!category) {
-    throw new AppError(
-      status.NOT_FOUND,
-      CATEGORY_MESSAGES.NOT_FOUND,
-    );
+    throw new AppError(status.NOT_FOUND, CATEGORY_MESSAGES.NOT_FOUND);
   }
 
   return category;
@@ -91,24 +90,19 @@ const updateCategory = async (
 ) => {
   validateObjectId(id, "Category");
 
-  const category =
-    await Category.findById(id);
+  const category = await Category.findById(id);
 
   if (!category) {
-    throw new AppError(
-      status.NOT_FOUND,
-      CATEGORY_MESSAGES.NOT_FOUND,
-    );
+    throw new AppError(status.NOT_FOUND, CATEGORY_MESSAGES.NOT_FOUND);
   }
 
   if (payload.label) {
     const value = generateSlug(payload.label);
 
-    const existingCategory =
-      await Category.findOne({
-        value,
-        _id: { $ne: id },
-      });
+    const existingCategory = await Category.findOne({
+      value,
+      _id: { $ne: id },
+    });
 
     if (existingCategory) {
       throw new AppError(
@@ -121,9 +115,7 @@ const updateCategory = async (
     category.value = value;
   }
 
-  if (
-    typeof payload.isActive !== "undefined"
-  ) {
+  if (typeof payload.isActive !== "undefined") {
     category.isActive = payload.isActive;
   }
 
@@ -138,14 +130,10 @@ const updateCategoryStatus = async (
 ) => {
   validateObjectId(id, "Category");
 
-  const category =
-    await Category.findById(id);
+  const category = await Category.findById(id);
 
   if (!category) {
-    throw new AppError(
-      status.NOT_FOUND,
-      CATEGORY_MESSAGES.NOT_FOUND,
-    );
+    throw new AppError(status.NOT_FOUND, CATEGORY_MESSAGES.NOT_FOUND);
   }
 
   category.isActive = isActive;

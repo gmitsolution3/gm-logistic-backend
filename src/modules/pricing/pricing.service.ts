@@ -6,14 +6,14 @@ import {
   TUpdatePricingPayload,
 } from "./pricing.types";
 
-import { Country } from "../country/country.model";
 import { Category } from "../category/category.model";
+import { Country } from "../country/country.model";
 
 import { TPaginationOptions } from "../../types/common";
 
 import { AppError } from "../../utils/AppError";
-import { validateObjectId } from "../../utils/validateObjectId";
 import { calculatePagination } from "../../utils/calculatePagination";
+import { validateObjectId } from "../../utils/validateObjectId";
 
 import { PRICING_MESSAGES } from "./pricing.constant";
 
@@ -42,18 +42,11 @@ const getAllPricing = async (
   const { page, limit, skip } =
     calculatePagination(paginationOptions);
 
-  const total =
-    await Pricing.countDocuments(query);
+  const total = await Pricing.countDocuments(query);
 
   const pricing = await Pricing.find(query)
-    .populate(
-      "countryId",
-      "name code currency isActive",
-    )
-    .populate(
-      "categoryId",
-      "label value isActive",
-    )
+    .populate("countryId", "name code currency isActive")
+    .populate("categoryId", "label value isActive")
     .sort({
       createdAt: -1,
     })
@@ -71,27 +64,15 @@ const getAllPricing = async (
   };
 };
 
-const getSinglePricing = async (
-  id: string,
-) => {
+const getSinglePricing = async (id: string) => {
   validateObjectId(id, "Pricing");
 
-  const pricing =
-    await Pricing.findById(id)
-      .populate(
-        "countryId",
-        "name code currency isActive",
-      )
-      .populate(
-        "categoryId",
-        "label value isActive",
-      );
+  const pricing = await Pricing.findById(id)
+    .populate("countryId", "name code currency isActive")
+    .populate("categoryId", "label value isActive");
 
   if (!pricing) {
-    throw new AppError(
-      status.NOT_FOUND,
-      PRICING_MESSAGES.NOT_FOUND,
-    );
+    throw new AppError(status.NOT_FOUND, PRICING_MESSAGES.NOT_FOUND);
   }
 
   return pricing;
@@ -103,23 +84,17 @@ const updatePricing = async (
 ) => {
   validateObjectId(id, "Pricing");
 
-  if (
-    payload.maxPrice < payload.minPrice
-  ) {
+  if (payload.maxPrice < payload.minPrice) {
     throw new AppError(
       status.BAD_REQUEST,
       PRICING_MESSAGES.INVALID_PRICE_RANGE,
     );
   }
 
-  const pricing =
-    await Pricing.findById(id);
+  const pricing = await Pricing.findById(id);
 
   if (!pricing) {
-    throw new AppError(
-      status.NOT_FOUND,
-      PRICING_MESSAGES.NOT_FOUND,
-    );
+    throw new AppError(status.NOT_FOUND, PRICING_MESSAGES.NOT_FOUND);
   }
 
   pricing.minPrice = payload.minPrice;
@@ -130,122 +105,108 @@ const updatePricing = async (
   await pricing.save();
 
   return await Pricing.findById(id)
-    .populate(
-      "countryId",
-      "name code currency isActive",
-    )
-    .populate(
-      "categoryId",
-      "label value isActive",
-    );
+    .populate("countryId", "name code currency isActive")
+    .populate("categoryId", "label value isActive");
 };
 
 /**
  * Called when a new country is created
  */
-const createPricingForCountry =
-  async (countryId: string) => {
-    const categories =
-      await Category.find().select("_id");
+const createPricingForCountry = async (countryId: string) => {
+  const categories = await Category.find().select("_id");
 
-    if (!categories.length) {
-      return;
-    }
+  if (!categories.length) {
+    return;
+  }
 
-    const pricingRecords =
-      categories.map((category) => ({
-        countryId,
-        categoryId: category._id,
-        minPrice: 0,
-        maxPrice: 0,
-        isConfigured: false,
-      }));
+  const pricingRecords = categories.map((category) => ({
+    countryId,
+    categoryId: category._id,
+    minPrice: 0,
+    maxPrice: 0,
+    isConfigured: false,
+  }));
 
-    await Pricing.insertMany(
-      pricingRecords,
-      {
-        ordered: false,
-      },
-    );
-  };
+  await Pricing.insertMany(pricingRecords, {
+    ordered: false,
+  });
+};
 
 /**
  * Called when a new category is created
  */
-const createPricingForCategory =
-  async (categoryId: string) => {
-    const countries =
-      await Country.find().select("_id");
+const createPricingForCategory = async (categoryId: string) => {
+  const countries = await Country.find().select("_id");
 
-    if (!countries.length) {
-      return;
-    }
+  if (!countries.length) {
+    return;
+  }
 
-    const pricingRecords =
-      countries.map((country) => ({
-        countryId: country._id,
-        categoryId,
-        minPrice: 0,
-        maxPrice: 0,
-        isConfigured: false,
-      }));
+  const pricingRecords = countries.map((country) => ({
+    countryId: country._id,
+    categoryId,
+    minPrice: 0,
+    maxPrice: 0,
+    isConfigured: false,
+  }));
 
-    await Pricing.insertMany(
-      pricingRecords,
-      {
-        ordered: false,
-      },
-    );
-  };
+  await Pricing.insertMany(pricingRecords, {
+    ordered: false,
+  });
+};
 
 /**
  * One-time sync utility
  * Creates missing pricing records
  */
-const generateMissingPricingRecords =
-  async () => {
-    const countries =
-      await Country.find().select("_id");
+const generateMissingPricingRecords = async () => {
+  const countries = await Country.find().select("_id");
 
-    const categories =
-      await Category.find().select("_id");
+  const categories = await Category.find().select("_id");
 
-    const operations = [];
+  const operations = [];
 
-    for (const country of countries) {
-      for (const category of categories) {
-        operations.push({
-          updateOne: {
-            filter: {
+  for (const country of countries) {
+    for (const category of categories) {
+      operations.push({
+        updateOne: {
+          filter: {
+            countryId: country._id,
+            categoryId: category._id,
+          },
+          update: {
+            $setOnInsert: {
               countryId: country._id,
               categoryId: category._id,
+              minPrice: 0,
+              maxPrice: 0,
+              isConfigured: false,
             },
-            update: {
-              $setOnInsert: {
-                countryId: country._id,
-                categoryId: category._id,
-                minPrice: 0,
-                maxPrice: 0,
-                isConfigured: false,
-              },
-            },
-            upsert: true,
           },
-        });
-      }
+          upsert: true,
+        },
+      });
     }
+  }
 
-    if (!operations.length) {
-      return;
-    }
+  if (!operations.length) {
+    return {
+      totalCountries: countries.length,
+      totalCategories: categories.length,
+      createdRecords: 0,
+    };
+  }
 
-    await Pricing.bulkWrite(
-      operations,
-      {
-        ordered: false,
-      },
-    );
+  const result = await Pricing.bulkWrite(operations, {
+    ordered: false,
+  });
+
+  return {
+    totalCountries: countries.length,
+    totalCategories: categories.length,
+    createdRecords: result.upsertedCount,
   };
+};
 
 export const PricingService = {
   getAllPricing,

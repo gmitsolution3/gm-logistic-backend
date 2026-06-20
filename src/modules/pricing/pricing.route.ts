@@ -7,21 +7,15 @@ import { validateRequest } from "../../middlewares/validateRequest";
 
 const router = Router();
 
-router.get(
-  "/",
-  PricingController.getAllPricing,
-);
+router.get("/", PricingController.getAllPricing);
 
-router.get(
-  "/:id",
-  PricingController.getSinglePricing,
-);
+router.post("/sync", PricingController.syncPricing);
+
+router.get("/:id", PricingController.getSinglePricing);
 
 router.patch(
   "/:id",
-  validateRequest(
-    PricingValidation.updatePricingValidationSchema,
-  ),
+  validateRequest(PricingValidation.updatePricingValidationSchema),
   PricingController.updatePricing,
 );
 

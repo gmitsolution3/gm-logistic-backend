@@ -8,6 +8,7 @@ import { calculatePagination } from "../../utils/calculatePagination";
 import { validateObjectId } from "../../utils/validateObjectId";
 import { COUNTRY_MESSAGES } from "./country.constant";
 import { TCountryFilters } from "./country.type";
+import { PricingService } from "../pricing/pricing.service";
 
 const createCountry = async (payload: {
   name: string;
@@ -30,11 +31,17 @@ const createCountry = async (payload: {
     throw new AppError(status.CONFLICT, COUNTRY_MESSAGES.CODE_EXISTS);
   }
 
-  return await Country.create({
+  const country = await Country.create({
     ...payload,
     code: payload.code.toUpperCase(),
     currency: payload.currency.toUpperCase(),
   });
+
+  await PricingService.createPricingForCountry(
+  country._id.toString(),
+);
+
+return country;
 };
 
 const getAllCountries = async (

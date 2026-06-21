@@ -5,6 +5,8 @@ import { PricingValidation } from "./pricing.validation";
 
 import { validateRequest } from "../../middlewares/validateRequest";
 
+import { uploadExcel } from "../../middlewares/uploadExcel";
+
 const router = Router();
 
 router.get("/", PricingController.getAllPricing);
@@ -12,6 +14,12 @@ router.get("/", PricingController.getAllPricing);
 router.post("/sync", PricingController.syncPricing);
 
 router.get("/export", PricingController.exportPricing);
+
+router.post(
+  "/import",
+  uploadExcel.single("file"),
+  PricingController.importPricing,
+);
 
 router.get("/:id", PricingController.getSinglePricing);
 

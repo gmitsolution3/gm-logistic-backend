@@ -7,6 +7,7 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 
 import { PRICING_MESSAGES } from "./pricing.constant";
+import { AppError } from "../../utils/AppError";
 
 const getAllPricing = catchAsync(
   async (req: Request, res: Response) => {
@@ -87,6 +88,11 @@ const syncPricing = catchAsync(
   },
 );
 
+/*
+ * Pricing export/import feature by excel sheet
+ */
+
+// Export pricing in excel sheet
 const exportPricing = catchAsync(
   async (
     _req: Request,
@@ -109,10 +115,39 @@ const exportPricing = catchAsync(
   },
 );
 
+// Import pricing excel sheet
+const importPricing = catchAsync(
+  async (
+    req: Request,
+    res: Response,
+  ) => {
+    if (!req.file) {
+      throw new AppError(
+        status.BAD_REQUEST,
+        "Excel file is required",
+      );
+    }
+
+    const result =
+      await PricingService.importPricing(
+        req.file.buffer,
+      );
+
+    sendResponse(res, {
+      statusCode: status.OK,
+      success: true,
+      message:
+        PRICING_MESSAGES.IMPORT_SUCCESS,
+      data: result,
+    });
+  },
+);
+
 export const PricingController = {
   getAllPricing,
   getSinglePricing,
   updatePricing,
   syncPricing,
-  exportPricing
+  exportPricing,
+  importPricing
 };

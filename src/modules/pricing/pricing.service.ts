@@ -241,6 +241,11 @@ const generateMissingPricingRecords = async () => {
   };
 };
 
+/*
+ * Pricing export/import feature by excel sheet
+ */
+
+// Export pricing in excel sheet
 const exportPricing = async () => {
   const pricing = await Pricing.find()
     .populate("countryId", "name code")
@@ -275,6 +280,119 @@ const exportPricing = async () => {
   return buffer;
 };
 
+// Import pricing excel sheet
+const importPricing = async (fileBuffer: Buffer) => {
+  const workbook = XLSX.read(fileBuffer, {
+    type: "buffer",
+  });
+
+  const sheetName = workbook.SheetNames[0];
+
+  const worksheet = workbook.Sheets[sheetName];
+
+  const rows = XLSX.utils.sheet_to_json<{
+    pricingId: string;
+    minPrice: number;
+    maxPrice: number;
+  }>(worksheet);
+
+  if (!rows.length) {
+    throw new AppError(status.BAD_REQUEST, "Excel file is empty");
+  }
+
+  const errors: {
+    row: number;
+    pricingId: string;
+    message: string;
+  }[] = [];
+
+  const operations = [];
+
+  for (let index = 0; index < rows.length; index++) {
+    const row = rows[index];
+
+    if (!row.pricingId) {
+      errors.push({
+        row: index + 2,
+        pricingId: "",
+        message: "Pricing ID is required",
+      });
+
+      continue;
+    }
+
+    const minPrice = Number(row.minPrice);
+
+    const maxPrice = Number(row.maxPrice);
+
+    if (Number.isNaN(minPrice)) {
+      errors.push({
+        row: index + 2,
+        pricingId: row.pricingId,
+        message: "Invalid minPrice",
+      });
+
+      continue;
+    }
+
+    if (Number.isNaN(maxPrice)) {
+      errors.push({
+        row: index + 2,
+        pricingId: row.pricingId,
+        message: "Invalid maxPrice",
+      });
+
+      continue;
+    }
+
+    if (maxPrice < minPrice) {
+      errors.push({
+        row: index + 2,
+        pricingId: row.pricingId,
+        message: PRICING_MESSAGES.INVALID_PRICE_RANGE,
+      });
+
+      continue;
+    }
+
+    operations.push({
+      updateOne: {
+        filter: {
+          _id: row.pricingId,
+        },
+
+        update: {
+          $set: {
+            minPrice,
+            maxPrice,
+
+            isConfigured: minPrice > 0 || maxPrice > 0,
+          },
+        },
+      },
+    });
+  }
+
+  if (errors.length) {
+    throw new AppError(status.BAD_REQUEST, JSON.stringify(errors));
+  }
+
+  if (!operations.length) {
+    return {
+      matchedRecords: 0,
+      modifiedRecords: 0,
+    };
+  }
+
+  const result = await Pricing.bulkWrite(operations);
+
+  return {
+    totalRows: rows.length,
+    matchedRecords: result.matchedCount,
+    modifiedRecords: result.modifiedCount,
+  };
+};
+
 export const PricingService = {
   getAllPricing,
   getSinglePricing,
@@ -286,4 +404,5 @@ export const PricingService = {
   generateMissingPricingRecords,
 
   exportPricing,
+  importPricing,
 };

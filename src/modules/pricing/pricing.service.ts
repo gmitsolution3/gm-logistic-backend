@@ -17,6 +17,8 @@ import { validateObjectId } from "../../utils/validateObjectId";
 
 import { PRICING_MESSAGES } from "./pricing.constant";
 
+import XLSX from "xlsx";
+
 const getAllPricing = async (
   filters: TPricingFilters,
   paginationOptions: TPaginationOptions,
@@ -239,6 +241,40 @@ const generateMissingPricingRecords = async () => {
   };
 };
 
+const exportPricing = async () => {
+  const pricing = await Pricing.find()
+    .populate("countryId", "name code")
+    .populate("categoryId", "label value")
+    .sort({
+      createdAt: -1,
+    });
+
+  const data = pricing.map((item) => ({
+    pricingId: item._id.toString(),
+
+    country: (item.countryId as any).name,
+
+    category: (item.categoryId as any).label,
+
+    minPrice: item.minPrice,
+
+    maxPrice: item.maxPrice,
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(data);
+
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Pricing");
+
+  const buffer = XLSX.write(workbook, {
+    type: "buffer",
+    bookType: "xlsx",
+  });
+
+  return buffer;
+};
+
 export const PricingService = {
   getAllPricing,
   getSinglePricing,
@@ -248,4 +284,6 @@ export const PricingService = {
   createPricingForCategory,
 
   generateMissingPricingRecords,
+
+  exportPricing,
 };

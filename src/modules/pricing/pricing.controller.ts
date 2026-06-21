@@ -87,9 +87,32 @@ const syncPricing = catchAsync(
   },
 );
 
+const exportPricing = catchAsync(
+  async (
+    _req: Request,
+    res: Response,
+  ) => {
+    const buffer =
+      await PricingService.exportPricing();
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="pricing.xlsx"',
+    );
+
+    res.send(buffer);
+  },
+);
+
 export const PricingController = {
   getAllPricing,
   getSinglePricing,
   updatePricing,
   syncPricing,
+  exportPricing
 };

@@ -10,4 +10,8 @@ export const PRICING_MESSAGES = {
     "Maximum price must be greater than or equal to minimum price",
 
   SYNCED: "Pricing records synchronized successfully",
+
+  EXPORT_SUCCESS: "Pricing exported successfully",
+
+  IMPORT_SUCCESS: "Pricing imported successfully",
 };

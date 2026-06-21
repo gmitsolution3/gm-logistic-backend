@@ -11,6 +11,8 @@ router.get("/", PricingController.getAllPricing);
 
 router.post("/sync", PricingController.syncPricing);
 
+router.get("/export", PricingController.exportPricing);
+
 router.get("/:id", PricingController.getSinglePricing);
 
 router.patch(

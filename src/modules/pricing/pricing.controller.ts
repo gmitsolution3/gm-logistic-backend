@@ -110,6 +110,8 @@ const exportPricing = catchAsync(
 
     const buffer = await PricingService.exportPricing(filters);
 
+    const date = new Date().toISOString().split("T")[0];
+
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -117,7 +119,7 @@ const exportPricing = catchAsync(
 
     res.setHeader(
       "Content-Disposition",
-      'attachment; filename="pricing.xlsx"',
+      `attachment; filename="pricing-${date}.xlsx"`,
     );
 
     res.send(buffer);

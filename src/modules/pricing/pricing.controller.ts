@@ -6,8 +6,8 @@ import { PricingService } from "./pricing.service";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 
-import { PRICING_MESSAGES } from "./pricing.constant";
 import { AppError } from "../../utils/AppError";
+import { PRICING_MESSAGES } from "./pricing.constant";
 
 const getAllPricing = catchAsync(
   async (req: Request, res: Response) => {
@@ -94,12 +94,21 @@ const syncPricing = catchAsync(
 
 // Export pricing in excel sheet
 const exportPricing = catchAsync(
-  async (
-    _req: Request,
-    res: Response,
-  ) => {
-    const buffer =
-      await PricingService.exportPricing();
+  async (req: Request, res: Response) => {
+    const filters = {
+      countryId: req.query.countryId as string,
+
+      categoryId: req.query.categoryId as string,
+
+      isConfigured:
+        req.query.isConfigured === undefined
+          ? undefined
+          : req.query.isConfigured === "true",
+
+      searchTerm: req.query.searchTerm as string,
+    };
+
+    const buffer = await PricingService.exportPricing(filters);
 
     res.setHeader(
       "Content-Type",
@@ -117,10 +126,7 @@ const exportPricing = catchAsync(
 
 // Import pricing excel sheet
 const importPricing = catchAsync(
-  async (
-    req: Request,
-    res: Response,
-  ) => {
+  async (req: Request, res: Response) => {
     if (!req.file) {
       throw new AppError(
         status.BAD_REQUEST,
@@ -128,16 +134,14 @@ const importPricing = catchAsync(
       );
     }
 
-    const result =
-      await PricingService.importPricing(
-        req.file.buffer,
-      );
+    const result = await PricingService.importPricing(
+      req.file.buffer,
+    );
 
     sendResponse(res, {
       statusCode: status.OK,
       success: true,
-      message:
-        PRICING_MESSAGES.IMPORT_SUCCESS,
+      message: PRICING_MESSAGES.IMPORT_SUCCESS,
       data: result,
     });
   },
@@ -149,5 +153,5 @@ export const PricingController = {
   updatePricing,
   syncPricing,
   exportPricing,
-  importPricing
+  importPricing,
 };

@@ -246,8 +246,55 @@ const generateMissingPricingRecords = async () => {
  */
 
 // Export pricing in excel sheet
-const exportPricing = async () => {
-  const pricing = await Pricing.find()
+const exportPricing = async (filters: TPricingFilters) => {
+  const query: Record<string, unknown> = {};
+
+  if (filters.countryId) {
+    query.countryId = filters.countryId;
+  }
+
+  if (filters.categoryId) {
+    query.categoryId = filters.categoryId;
+  }
+
+  if (filters.isConfigured !== undefined) {
+    query.isConfigured = filters.isConfigured;
+  }
+
+  if (filters.searchTerm) {
+    const countries = await Country.find({
+      name: {
+        $regex: filters.searchTerm,
+        $options: "i",
+      },
+    }).select("_id");
+
+    const categories = await Category.find({
+      label: {
+        $regex: filters.searchTerm,
+        $options: "i",
+      },
+    }).select("_id");
+
+    const countryIds = countries.map((country) => country._id);
+
+    const categoryIds = categories.map((category) => category._id);
+
+    query.$or = [
+      {
+        countryId: {
+          $in: countryIds,
+        },
+      },
+      {
+        categoryId: {
+          $in: categoryIds,
+        },
+      },
+    ];
+  }
+
+  const pricing = await Pricing.find(query)
     .populate("countryId", "name code")
     .populate("categoryId", "label value")
     .sort({

@@ -13,6 +13,13 @@ const createCountryValidationSchema = z.object({
     currency: z.string({
       error: "Currency is required",
     }),
+
+    warehouse: z
+      .string({
+        error: "Warehouse is required",
+      })
+      .trim()
+      .min(1),
   }),
 });
 
@@ -23,6 +30,8 @@ const updateCountryValidationSchema = z.object({
     code: z.string().optional(),
 
     currency: z.string().optional(),
+
+    warehouse: z.string().trim().min(1).optional(),
 
     isActive: z.boolean().optional(),
   }),

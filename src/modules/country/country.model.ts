@@ -29,6 +29,12 @@ const countrySchema = new mongoose.Schema(
       uppercase: true,
     },
 
+    warehouse: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     isActive: {
       type: Boolean,
       default: true,
@@ -40,7 +46,6 @@ const countrySchema = new mongoose.Schema(
     versionKey: false,
   },
 );
-
 
 export type TCountry = InferSchemaType<typeof countrySchema>;
 

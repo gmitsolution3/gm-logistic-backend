@@ -7,14 +7,10 @@ import { AppError } from "../../utils/AppError";
 import { calculatePagination } from "../../utils/calculatePagination";
 import { validateObjectId } from "../../utils/validateObjectId";
 import { COUNTRY_MESSAGES } from "./country.constant";
-import { TCountryFilters } from "./country.type";
+import { TCountryFilters, TCreateCountryPayload } from "./country.type";
 import { PricingService } from "../pricing/pricing.service";
 
-const createCountry = async (payload: {
-  name: string;
-  code: string;
-  currency: string;
-}) => {
+const createCountry = async (payload: TCreateCountryPayload) => {
   const existingName = await Country.findOne({
     name: payload.name,
   });

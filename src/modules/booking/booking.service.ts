@@ -13,7 +13,10 @@ import { validateObjectId } from "../../utils/validateObjectId";
 
 import { TPaginationOptions } from "../../types/common";
 import { calculatePagination } from "../../utils/calculatePagination";
-import { TBookingFilters, TUpdateBookingStatusPayload } from "./booking.types";
+import {
+  TBookingFilters,
+  TUpdateBookingStatusPayload,
+} from "./booking.types";
 
 const createBooking = async (payload: TCreateBookingPayload) => {
   validateObjectId(payload.userId, "User");
@@ -76,10 +79,6 @@ const getAllBookings = async (
     query.status = filters.status;
   }
 
-  if (filters.userId) {
-    query.userId = filters.userId;
-  }
-
   if (filters.searchTerm) {
     query.trackingId = {
       $regex: filters.searchTerm,
@@ -131,33 +130,24 @@ const getSingleBooking = async (id: string) => {
   return booking;
 };
 
-const updateBookingStatus =
-  async (
-    id: string,
-    payload: TUpdateBookingStatusPayload,
-  ) => {
-    validateObjectId(
-      id,
-      "Booking",
-    );
+const updateBookingStatus = async (
+  id: string,
+  payload: TUpdateBookingStatusPayload,
+) => {
+  validateObjectId(id, "Booking");
 
-    const booking =
-      await Booking.findById(id);
+  const booking = await Booking.findById(id);
 
-    if (!booking) {
-      throw new AppError(
-        status.NOT_FOUND,
-        BOOKING_MESSAGES.NOT_FOUND,
-      );
-    }
+  if (!booking) {
+    throw new AppError(status.NOT_FOUND, BOOKING_MESSAGES.NOT_FOUND);
+  }
 
-    booking.status =
-      payload.status;
+  booking.status = payload.status;
 
-    await booking.save();
+  await booking.save();
 
-    return booking;
-  };
+  return booking;
+};
 
 export const BookingService = {
   createBooking,

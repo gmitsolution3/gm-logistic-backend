@@ -5,6 +5,7 @@ import defaultController from "../modules/default/default.controller";
 import pricingRoutes from "../modules/pricing/pricing.route";
 import userRoutes from "../modules/user/user.route";
 import adminDashboardRoute from "../modules/admin-dashboard/admin-dashboard.route"
+import bookingRoutes from './../modules/booking/booking.route';
 
 const router = Router();
 
@@ -14,5 +15,6 @@ router.use("/categories", categoryRoutes);
 router.use("/pricing", pricingRoutes);
 router.use("/users", userRoutes)
 router.use("/admin-dashboard", adminDashboardRoute)
+router.use("/bookings", bookingRoutes)
 
 export default router;

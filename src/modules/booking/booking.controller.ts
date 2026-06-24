@@ -66,6 +66,40 @@ const getSingleBooking = catchAsync(
   },
 );
 
+const getBookingsByUserId =
+  catchAsync(
+    async (
+      req: Request,
+      res: Response,
+    ) => {
+      const paginationOptions =
+        {
+          page:
+            req.query
+              .page as string,
+
+          limit:
+            req.query
+              .limit as string,
+        };
+
+      const result =
+        await BookingService.getBookingsByUserId(
+          req.params.userId as string,
+          paginationOptions,
+        );
+
+      sendResponse(res, {
+        statusCode: status.OK,
+        success: true,
+        message:
+          BOOKING_MESSAGES.RETRIEVED,
+        meta: result.meta,
+        data: result.result,
+      });
+    },
+  );
+
 const updateBookingStatus =
   catchAsync(
     async (
@@ -92,5 +126,6 @@ export const BookingController = {
   createBooking,
   getAllBookings,
   getSingleBooking,
+  getBookingsByUserId,
   updateBookingStatus,
 };

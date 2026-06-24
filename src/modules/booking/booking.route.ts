@@ -15,6 +15,8 @@ router.post(
 
 router.get("/", BookingController.getAllBookings);
 
+router.get("/user/:userId", BookingController.getBookingsByUserId);
+
 router.get("/:id", BookingController.getSingleBooking);
 
 router.patch(

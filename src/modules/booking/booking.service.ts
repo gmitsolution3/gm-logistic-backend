@@ -79,6 +79,10 @@ const getAllBookings = async (
     query.status = filters.status;
   }
 
+  if (filters.userId) {
+    query.userId = filters.userId;
+  }
+
   if (filters.searchTerm) {
     query.trackingId = {
       $regex: filters.searchTerm,
@@ -130,6 +134,43 @@ const getSingleBooking = async (id: string) => {
   return booking;
 };
 
+const getBookingsByUserId = async (
+  userId: string,
+  paginationOptions: TPaginationOptions,
+) => {
+  validateObjectId(userId, "User");
+
+  const { page, limit, skip } =
+    calculatePagination(paginationOptions);
+
+  const total = await Booking.countDocuments({
+    userId,
+  });
+
+  const bookings = await Booking.find({
+    userId,
+  })
+    .populate("fromCountry", "name code warehouse")
+    .populate("toCountry", "name code warehouse")
+    .populate("categoryPricing")
+    .sort({
+      createdAt: -1,
+    })
+    .skip(skip)
+    .limit(limit);
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+
+    result: bookings,
+  };
+};
+
 const updateBookingStatus = async (
   id: string,
   payload: TUpdateBookingStatusPayload,
@@ -153,5 +194,6 @@ export const BookingService = {
   createBooking,
   getAllBookings,
   getSingleBooking,
+  getBookingsByUserId,
   updateBookingStatus,
 };

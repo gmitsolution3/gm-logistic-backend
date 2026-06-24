@@ -66,61 +66,51 @@ const getSingleBooking = catchAsync(
   },
 );
 
-const getBookingsByUserId =
-  catchAsync(
-    async (
-      req: Request,
-      res: Response,
-    ) => {
-      const paginationOptions =
-        {
-          page:
-            req.query
-              .page as string,
+const getBookingsByUserId = catchAsync(
+  async (req: Request, res: Response) => {
+    const filters = {
+      status: req.query.status as string,
 
-          limit:
-            req.query
-              .limit as string,
-        };
+      searchTerm: req.query.searchTerm as string,
+    };
 
-      const result =
-        await BookingService.getBookingsByUserId(
-          req.params.userId as string,
-          paginationOptions,
-        );
+    const paginationOptions = {
+      page: req.query.page as string,
 
-      sendResponse(res, {
-        statusCode: status.OK,
-        success: true,
-        message:
-          BOOKING_MESSAGES.RETRIEVED,
-        meta: result.meta,
-        data: result.result,
-      });
-    },
-  );
+      limit: req.query.limit as string,
+    };
 
-const updateBookingStatus =
-  catchAsync(
-    async (
-      req: Request,
-      res: Response,
-    ) => {
-      const result =
-        await BookingService.updateBookingStatus(
-          req.params.id as string,
-          req.body,
-        );
+    const result = await BookingService.getBookingsByUserId(
+      req.params.userId as string,
+      filters,
+      paginationOptions,
+    );
 
-      sendResponse(res, {
-        statusCode: status.OK,
-        success: true,
-        message:
-          BOOKING_MESSAGES.STATUS_UPDATED,
-        data: result,
-      });
-    },
-  );
+    sendResponse(res, {
+      statusCode: status.OK,
+      success: true,
+      message: BOOKING_MESSAGES.RETRIEVED,
+      meta: result.meta,
+      data: result.result,
+    });
+  },
+);
+
+const updateBookingStatus = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await BookingService.updateBookingStatus(
+      req.params.id as string,
+      req.body,
+    );
+
+    sendResponse(res, {
+      statusCode: status.OK,
+      success: true,
+      message: BOOKING_MESSAGES.STATUS_UPDATED,
+      data: result,
+    });
+  },
+);
 
 export const BookingController = {
   createBooking,

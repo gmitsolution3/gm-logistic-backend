@@ -136,20 +136,35 @@ const getSingleBooking = async (id: string) => {
 
 const getBookingsByUserId = async (
   userId: string,
+  filters: {
+    status?: string;
+    searchTerm?: string;
+  },
   paginationOptions: TPaginationOptions,
 ) => {
   validateObjectId(userId, "User");
 
+  const query: Record<string, unknown> = {
+    userId,
+  };
+
+  if (filters.status) {
+    query.status = filters.status;
+  }
+
+  if (filters.searchTerm) {
+    query.trackingId = {
+      $regex: filters.searchTerm,
+      $options: "i",
+    };
+  }
+
   const { page, limit, skip } =
     calculatePagination(paginationOptions);
 
-  const total = await Booking.countDocuments({
-    userId,
-  });
+  const total = await Booking.countDocuments(query);
 
-  const bookings = await Booking.find({
-    userId,
-  })
+  const bookings = await Booking.find(query)
     .populate("fromCountry", "name code warehouse")
     .populate("toCountry", "name code warehouse")
     .populate("categoryPricing")

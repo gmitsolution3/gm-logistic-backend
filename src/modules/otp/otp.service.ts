@@ -1,13 +1,11 @@
 import status from "http-status";
 
-import { Otp } from "./otp.model";
-
-import { User } from "../user/user.model";
-
+import { EmailService } from "../../services/email.service";
+import { otpTemplate } from "../../services/templates/otp.template";
 import { AppError } from "../../utils/AppError";
-
 import { generateOtp } from "../../utils/generateOtp";
-
+import { User } from "../user/user.model";
+import { Otp } from "./otp.model";
 import { TSendOtpPayload, TVerifyOtpPayload } from "./otp.types";
 
 const sendOtp = async (payload: TSendOtpPayload) => {
@@ -45,57 +43,38 @@ const sendOtp = async (payload: TSendOtpPayload) => {
     },
   );
 
-  // TODO:
-  // send email
+  await EmailService.sendEmail({
+    to: payload.email,
 
-  console.log("OTP:", otp);
+    subject: "Your GM Logistic Verification Code",
+
+    html: otpTemplate(otp),
+  });
 
   return null;
 };
 
-const verifyOtp = async (
-  payload: TVerifyOtpPayload,
-) => {
-  const otp =
-    await Otp.findOne({
-      email: payload.email,
+const verifyOtp = async (payload: TVerifyOtpPayload) => {
+  const otp = await Otp.findOne({
+    email: payload.email,
 
-      purpose:
-        payload.purpose,
-    });
+    purpose: payload.purpose,
+  });
 
   if (!otp) {
-    throw new AppError(
-      status.NOT_FOUND,
-      "OTP not found",
-    );
+    throw new AppError(status.NOT_FOUND, "OTP not found");
   }
 
   if (otp.isUsed) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      "OTP already used",
-    );
+    throw new AppError(status.BAD_REQUEST, "OTP already used");
   }
 
-  if (
-    otp.expiresAt <
-    new Date()
-  ) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      "OTP expired",
-    );
+  if (otp.expiresAt < new Date()) {
+    throw new AppError(status.BAD_REQUEST, "OTP expired");
   }
 
-  if (
-    otp.otp !==
-    payload.otp
-  ) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      "Invalid OTP",
-    );
+  if (otp.otp !== payload.otp) {
+    throw new AppError(status.BAD_REQUEST, "Invalid OTP");
   }
 
   otp.isUsed = true;

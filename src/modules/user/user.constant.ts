@@ -8,5 +8,5 @@ export const USER_MESSAGES = {
   NOT_FOUND: "User not found",
 
   EMAIL_VERIFICATION_UPDATED:
-    "Email verification status updated successfully",
+    "Email email verification successful",
 };

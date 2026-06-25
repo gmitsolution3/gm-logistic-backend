@@ -7,24 +7,25 @@ import { validateRequest } from "../../middlewares/validateRequest";
 
 const router = Router();
 
-router.get(
-  "/",
-  UserController.getAllUsers,
+router.get("/", UserController.getAllUsers);
+
+router.patch(
+  "/email-verification",
+  validateRequest(
+    UserValidation.updateEmailVerificationValidationSchema,
+  ),
+  UserController.updateEmailVerification,
 );
 
 router.patch(
   "/:id/role",
-  validateRequest(
-    UserValidation.updateUserRoleValidationSchema,
-  ),
+  validateRequest(UserValidation.updateUserRoleValidationSchema),
   UserController.updateUserRole,
 );
 
 router.patch(
   "/:id/ban",
-  validateRequest(
-    UserValidation.updateUserBanStatusValidationSchema,
-  ),
+  validateRequest(UserValidation.updateUserBanStatusValidationSchema),
   UserController.updateUserBanStatus,
 );
 

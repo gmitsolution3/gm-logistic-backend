@@ -11,8 +11,7 @@ import { USER_MESSAGES } from "./user.constant";
 const getAllUsers = catchAsync(
   async (req: Request, res: Response) => {
     const filters = {
-      searchTerm:
-        req.query.searchTerm as string,
+      searchTerm: req.query.searchTerm as string,
 
       role: req.query.role as string,
 
@@ -27,11 +26,10 @@ const getAllUsers = catchAsync(
       limit: req.query.limit as string,
     };
 
-    const result =
-      await UserService.getAllUsers(
-        filters,
-        paginationOptions,
-      );
+    const result = await UserService.getAllUsers(
+      filters,
+      paginationOptions,
+    );
 
     sendResponse(res, {
       statusCode: status.OK,
@@ -45,46 +43,54 @@ const getAllUsers = catchAsync(
 
 const updateUserRole = catchAsync(
   async (req: Request, res: Response) => {
-    const result =
-      await UserService.updateUserRole(
-        req.params.id,
-        req.body,
-      );
+    const result = await UserService.updateUserRole(
+      req.params.id as string,
+      req.body,
+    );
 
     sendResponse(res, {
       statusCode: status.OK,
       success: true,
-      message:
-        USER_MESSAGES.ROLE_UPDATED,
+      message: USER_MESSAGES.ROLE_UPDATED,
       data: result,
     });
   },
 );
 
-const updateUserBanStatus =
-  catchAsync(
-    async (
-      req: Request,
-      res: Response,
-    ) => {
-      const result =
-        await UserService.updateUserBanStatus(
-          req.params.id,
-          req.body,
-        );
+const updateUserBanStatus = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await UserService.updateUserBanStatus(
+      req.params.id as string,
+      req.body,
+    );
 
-      sendResponse(res, {
-        statusCode: status.OK,
-        success: true,
-        message:
-          USER_MESSAGES.BAN_STATUS_UPDATED,
-        data: result,
-      });
-    },
-  );
+    sendResponse(res, {
+      statusCode: status.OK,
+      success: true,
+      message: USER_MESSAGES.BAN_STATUS_UPDATED,
+      data: result,
+    });
+  },
+);
+
+const updateEmailVerification = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await UserService.updateEmailVerification(
+      req.body,
+    );
+
+    sendResponse(res, {
+      statusCode: status.OK,
+      success: true,
+      message: USER_MESSAGES.EMAIL_VERIFICATION_UPDATED,
+      data: result,
+    });
+  },
+);
 
 export const UserController = {
   getAllUsers,
   updateUserRole,
   updateUserBanStatus,
+  updateEmailVerification,
 };

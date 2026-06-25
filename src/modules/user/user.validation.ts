@@ -1,21 +1,31 @@
 import { z } from "zod";
 
-const updateUserRoleValidationSchema =
-  z.object({
-    body: z.object({
-      role: z.enum([
-        "admin",
-        "user",
-      ]),
-    }),
-  });
+const updateUserRoleValidationSchema = z.object({
+  body: z.object({
+    role: z.enum(["admin", "user"]),
+  }),
+});
 
-const updateUserBanStatusValidationSchema =
+const updateUserBanStatusValidationSchema = z.object({
+  body: z.object({
+    isBanned: z.boolean({
+      error: "isBanned is required",
+    }),
+  }),
+});
+
+const updateEmailVerificationValidationSchema =
   z.object({
     body: z.object({
-      isBanned: z.boolean({
+      email: z
+        .string({
+          error: "Email is required",
+        })
+        .email(),
+
+      emailVerified: z.boolean({
         error:
-          "isBanned is required",
+          "Email verification status is required",
       }),
     }),
   });
@@ -23,4 +33,5 @@ const updateUserBanStatusValidationSchema =
 export const UserValidation = {
   updateUserRoleValidationSchema,
   updateUserBanStatusValidationSchema,
+  updateEmailVerificationValidationSchema
 };

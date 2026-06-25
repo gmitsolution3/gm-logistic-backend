@@ -3,16 +3,17 @@ import status from "http-status";
 import { User } from "./user.model";
 
 import {
-  TUserFilters,
-  TUpdateUserRolePayload,
+  TUpdateEmailVerificationPayload,
   TUpdateUserBanStatusPayload,
+  TUpdateUserRolePayload,
+  TUserFilters,
 } from "./user.types";
 
 import { TPaginationOptions } from "../../types/common";
 
 import { AppError } from "../../utils/AppError";
-import { validateObjectId } from "../../utils/validateObjectId";
 import { calculatePagination } from "../../utils/calculatePagination";
+import { validateObjectId } from "../../utils/validateObjectId";
 
 import { USER_MESSAGES } from "./user.constant";
 
@@ -20,24 +21,17 @@ const getAllUsers = async (
   filters: TUserFilters,
   paginationOptions: TPaginationOptions,
 ) => {
-  const query: Record<
-    string,
-    unknown
-  > = {};
+  const query: Record<string, unknown> = {};
 
   if (filters.role) {
     query.role = filters.role;
   }
 
-  if (
-    filters.isBanned !== undefined
-  ) {
-    query.isBanned =
-      filters.isBanned;
+  if (filters.isBanned !== undefined) {
+    query.isBanned = filters.isBanned;
   }
 
-  const searchTerm =
-    filters.searchTerm?.trim();
+  const searchTerm = filters.searchTerm?.trim();
 
   if (searchTerm) {
     query.$or = [
@@ -63,16 +57,11 @@ const getAllUsers = async (
   }
 
   const { page, limit, skip } =
-    calculatePagination(
-      paginationOptions,
-    );
+    calculatePagination(paginationOptions);
 
-  const total =
-    await User.countDocuments(query);
+  const total = await User.countDocuments(query);
 
-  const users = await User.find(
-    query,
-  )
+  const users = await User.find(query)
     .sort({
       createdAt: -1,
     })
@@ -84,9 +73,7 @@ const getAllUsers = async (
       page,
       limit,
       total,
-      totalPages: Math.ceil(
-        total / limit,
-      ),
+      totalPages: Math.ceil(total / limit),
     },
     result: users,
   };
@@ -98,14 +85,10 @@ const updateUserRole = async (
 ) => {
   validateObjectId(id, "User");
 
-  const user =
-    await User.findById(id);
+  const user = await User.findById(id);
 
   if (!user) {
-    throw new AppError(
-      status.NOT_FOUND,
-      USER_MESSAGES.NOT_FOUND,
-    );
+    throw new AppError(status.NOT_FOUND, USER_MESSAGES.NOT_FOUND);
   }
 
   user.role = payload.role;
@@ -115,33 +98,46 @@ const updateUserRole = async (
   return user;
 };
 
-const updateUserBanStatus =
-  async (
-    id: string,
-    payload: TUpdateUserBanStatusPayload,
-  ) => {
-    validateObjectId(id, "User");
+const updateUserBanStatus = async (
+  id: string,
+  payload: TUpdateUserBanStatusPayload,
+) => {
+  validateObjectId(id, "User");
 
-    const user =
-      await User.findById(id);
+  const user = await User.findById(id);
 
-    if (!user) {
-      throw new AppError(
-        status.NOT_FOUND,
-        USER_MESSAGES.NOT_FOUND,
-      );
-    }
+  if (!user) {
+    throw new AppError(status.NOT_FOUND, USER_MESSAGES.NOT_FOUND);
+  }
 
-    user.isBanned =
-      payload.isBanned;
+  user.isBanned = payload.isBanned;
 
-    await user.save();
+  await user.save();
 
-    return user;
-  };
+  return user;
+};
+
+const updateEmailVerification = async (
+  payload: TUpdateEmailVerificationPayload,
+) => {
+  const user = await User.findOne({
+    email: payload.email,
+  });
+
+  if (!user) {
+    throw new AppError(status.NOT_FOUND, USER_MESSAGES.NOT_FOUND);
+  }
+
+  user.emailVerified = payload.emailVerified;
+
+  await user.save();
+
+  return user;
+};
 
 export const UserService = {
   getAllUsers,
   updateUserRole,
   updateUserBanStatus,
+  updateEmailVerification,
 };

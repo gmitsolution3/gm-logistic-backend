@@ -186,6 +186,40 @@ const getBookingsByUserId = async (
   };
 };
 
+const getBookingByTrackingId =
+  async (
+    trackingId: string,
+  ) => {
+    const booking =
+      await Booking.findOne({
+        trackingId,
+      })
+        .populate(
+          "userId",
+          "name email phone",
+        )
+        .populate(
+          "fromCountry",
+          "name code currency warehouse",
+        )
+        .populate(
+          "toCountry",
+          "name code currency warehouse",
+        )
+        .populate(
+          "categoryPricing",
+        );
+
+    if (!booking) {
+      throw new AppError(
+        status.NOT_FOUND,
+        BOOKING_MESSAGES.NOT_FOUND,
+      );
+    }
+
+    return booking;
+  };
+
 const updateBookingStatus = async (
   id: string,
   payload: TUpdateBookingStatusPayload,
@@ -210,5 +244,6 @@ export const BookingService = {
   getAllBookings,
   getSingleBooking,
   getBookingsByUserId,
+  getBookingByTrackingId,
   updateBookingStatus,
 };

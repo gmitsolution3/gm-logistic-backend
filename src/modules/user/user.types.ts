@@ -11,3 +11,8 @@ export type TUpdateUserRolePayload = {
 export type TUpdateUserBanStatusPayload = {
   isBanned: boolean;
 };
+
+export type TUpdateEmailVerificationPayload = {
+  email: string;
+  emailVerified: boolean;
+};

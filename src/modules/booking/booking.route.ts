@@ -17,6 +17,11 @@ router.get("/", BookingController.getAllBookings);
 
 router.get("/user/:userId", BookingController.getBookingsByUserId);
 
+router.get(
+  "/tracking/:trackingId",
+  BookingController.getBookingByTrackingId,
+);
+
 router.get("/:id", BookingController.getSingleBooking);
 
 router.patch(

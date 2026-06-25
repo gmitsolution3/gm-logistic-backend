@@ -96,6 +96,27 @@ const getBookingsByUserId = catchAsync(
   },
 );
 
+const getBookingByTrackingId =
+  catchAsync(
+    async (
+      req: Request,
+      res: Response,
+    ) => {
+      const result =
+        await BookingService.getBookingByTrackingId(
+          req.params.trackingId as string,
+        );
+
+      sendResponse(res, {
+        statusCode: status.OK,
+        success: true,
+        message:
+          BOOKING_MESSAGES.SINGLE_RETRIEVED,
+        data: result,
+      });
+    },
+  );
+
 const updateBookingStatus = catchAsync(
   async (req: Request, res: Response) => {
     const result = await BookingService.updateBookingStatus(
@@ -117,5 +138,6 @@ export const BookingController = {
   getAllBookings,
   getSingleBooking,
   getBookingsByUserId,
+  getBookingByTrackingId,
   updateBookingStatus,
 };
